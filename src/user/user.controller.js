@@ -53,3 +53,48 @@ export const changeUserRole = async (req, res) => {
 
     return res.send({ message: 'Rol actualizado exitosamente', updatedUser });
 };
+
+export const createDefaultUsers = async () => {
+    try {
+        const defaultUsers = [
+            {
+                email: 'cliente@demo.com',
+                password: 'clienteDemo123!',
+                firstName: 'Cliente',
+                lastName: 'Demo',
+                role: 'cliente'
+            },
+            {
+                email: 'adminhotel@demo.com',
+                password: 'adminHotel123!',
+                firstName: 'Admin',
+                lastName: 'Hotel',
+                role: 'adminHotel'
+            },
+            {
+                email: 'admin@plataforma.com',
+                password: 'adminPlataforma123!',
+                firstName: 'Admin',
+                lastName: 'Plataforma',
+                role: 'adminPlataforma'
+            }
+        ];
+
+        for (const userData of defaultUsers) {
+            const exists = await User.findOne({ email: userData.email });
+            if (!exists) {
+                const hashedPassword = await encrypt(userData.password);
+                const newUser = new User({
+                    ...userData,
+                    password: hashedPassword
+                });
+                await newUser.save();
+                console.log(`Usuario predeterminado creado: ${userData.email}`);
+            } else {
+                console.warn(`El usuario ${userData.email} ya existe`);
+            }
+        }
+    } catch (err) {
+        console.error('Error creando usuarios predeterminados:', err);
+    }
+};
