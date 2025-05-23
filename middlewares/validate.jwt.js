@@ -16,7 +16,7 @@ export const validateJwt = async (req, res, next) => {
         let token = authorization.startsWith('Bearer ') ? authorization.split(' ')[1] : authorization;
 
         // Verificar el token
-        const decoded = jwt.verify(token, secretKey);
+        const decoded = jwt.verify(token, secretKey, { algorithms: ['HS256'] });
 
         // Buscar el usuario por ID
         const user = await findUserById(decoded.uid);

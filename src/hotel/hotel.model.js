@@ -34,7 +34,8 @@ const hotelSchema = new Schema(
     amenities: [{ type: String, trim: true }],
     images: {
       type: String,
-      trim: true
+      trim: true,
+      default: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTReZGzoHdnmPXrpI2Aldh8T-vHESMwGqByCw&s'
     },
     comments: [
       {

@@ -9,24 +9,43 @@ export const test = (req, res) => {
 
 // Registro de usuario normal (cliente)
 export const registerUser = async (req, res) => {
-    try {
-        const data = req.body;
+  try {
+    const data = req.body;
 
-        // Asignar firebaseUid si no se manda
-        if (!data.firebaseUid) {
-            const userCount = await User.countDocuments();
-            data.firebaseUid = `user_${userCount + 1}`;
-        }
-
-        data.password = await encrypt(data.password);
-        const user = new User(data);
-        await user.save();
-        return res.status(201).send({ message: 'Usuario registrado exitosamente', user });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({ message: 'Error al registrar usuario', error });
+    // Asignar firebaseUid si no se manda
+    if (!data.firebaseUid) {
+      const userCount = await User.countDocuments();
+      data.firebaseUid = `user_${userCount + 1}`;
     }
+
+    // Encriptar la contraseña
+    data.password = await encrypt(data.password);
+
+    // Guardar nuevo usuario
+    const user = new User(data);
+    await user.save();
+
+    // Generar token JWT personalizado
+    const token = await generateJwt({
+      uid: user._id,
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      role: user.role
+    });
+
+    // Enviar respuesta completa
+    return res.status(201).send({
+      message: 'Usuario registrado exitosamente',
+      user,
+      token // ✅ este es el que el frontend necesita
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: 'Error al registrar usuario', error });
+  }
 };
+
 
 // Login (para todos los roles)
 export const login = async (req, res) => {
@@ -35,8 +54,9 @@ export const login = async (req, res) => {
         const user = await User.findOne({ email });
         if (!user) return res.status(400).send({ message: 'Correo o contraseña incorrectos' });
 
-        const validPassword = await checkPassword(password, user.password);
+        const validPassword = await checkPassword(user.password, password);
         if (!validPassword) return res.status(400).send({ message: 'Correo o contraseña incorrectos' });
+
 
         const token = await generateJwt({
             uid: user._id,

@@ -1,5 +1,6 @@
 //Configurar el servidor express (HTTP)
 'use strict'
+import dotenv from 'dotenv';
 import express from 'express'
 import morgan from 'morgan'
 import helmet from 'helmet' 
@@ -17,6 +18,8 @@ import invoiceRoutes from '../src/invoice/invoice.routes.js'
 import paymentRoutes from '../src/payment/payment.routes.js'
 import reportRoutes from '../src/report/report.routes.js'
  
+
+dotenv.config();
 const configs = (app)=>{
     app.use(express.json())
     app.use(express.urlencoded({extended: false}))
